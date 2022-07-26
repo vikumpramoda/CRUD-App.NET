@@ -1,0 +1,122 @@
+﻿@{
+    ViewData["Title"] = "Seller Page";
+}
+
+<input type="text" id="txtSearch" style="margine-right:5px" placeholder="Search Reseller Name" />
+<button id="btnGetSellers" class="btn btn-primary"> Get Sellers / Get Full Table </button>
+
+<br />
+<br />
+
+<input type="hidden" id="txtSellerId" style="margine-right:5px"/>
+<input type="text" id="txtName" style="margine-right:5px" placeholder="Name"/>
+<input type="text" id="txtEmail" style="margine-right:5px" placeholder="Email"/>
+<input type="text" id="txtFax" style="margine-right:5px" placeholder="Fax" />
+<input type="text" id="txtAge" style="margine-right:5px" placeholder="Age"/>
+<input type="text" id="txtPhone" style="margine-right:5px" placeholder="Phone No" />
+
+<button id="btnSaveSeller" class="btn btn-primary"> Add New Sellers </button>
+
+<br />
+<br />
+
+<table id="tblSeller" class="table table-strip table-bordered">
+    <thead>
+        <tr>
+            <th> Seller ID </th>
+            <th> SellerName </th>
+            <th> Email </th>
+            <th> Fax NO </th>
+            <th> Age </th>
+            <th> Phone No </th>
+            <th> Edit/Delete </th>
+        </tr>
+    </thead>
+
+    <tbody></tbody>
+
+</table>
+
+
+
+
+<script src="~/jquery/jquery.min.js"></script>
+<script type="text/javascript">
+    var _sellers = [];
+
+    $("#btnGetSellers").click(function () {
+        GetSellers();
+    });
+
+
+    $("#btnSaveSeller").click(function () {
+        var Seller = {
+            SellerId: $(txtSellerId).val(),
+            Name: $(txtName).val(),
+            Email: $(txtEmail).val(),
+            Fax: $(txtFax).val(),
+            Age: $(txtAge).val(),
+            Phone: $(txtPhone).val(),
+        };
+        $.post("Sellers/SaveOrUpdate", Seller, function () {
+            $(txtSellerId).val(0);
+            GetSellers();
+            Reset();
+        });
+    });
+
+    function GetSellers() {
+        _sellers = [];
+        $("#tblSeller tbody tr").remove();
+
+        var name = $.trim($(txtSearch).val());
+        $.get("Sellers/GetSellers?name=" + name, function (sellers) {
+            _sellers = sellers;
+            $.map(sellers, function (seller) {
+                $("#tblSeller tbody").append(`<tr>
+
+                            <td>`+ seller.sellerId+`</td>
+                            <td>`+ seller.name +`</td>
+                            <td>`+ seller.email +`</td>
+                            <td>`+ seller.fax +`</td>
+                            <td>`+ seller.age +`</td>
+                            <td>`+ seller.phone +`</td>
+                            <td>
+                                <button class="btn btn-primary" onclick="Edit(`+ seller.sellerId+`)">Edit</button>
+                                <button class="btn btn-primary" onclick="Delete(`+ seller.sellerId+`)">Delete</button>
+                            </td>
+                </tr>`);
+
+            })
+        })
+    }
+
+    function Edit(sellerId) {
+        var seller = _sellers.find(x => x.sellerId == sellerId);
+        $("#txtSellerId").val(seller.sellerId);
+        $("#txtName").val(seller.name);
+        $("#txtEmail").val(seller.email);
+        $("#txtFax").val(seller.fax);
+        $("#txtAge").val(seller.age);
+        $("#txtPhone").val(seller.phone);
+    }
+
+    function Delete(sellerId) {
+        $.post("Sellers/Delete?sellerId=" + sellerId, function () {
+            GetSellers();
+        });
+    }
+
+    function Reset(){
+        $("#txtSellerId").val(0);
+        $("#txtName").val(" ");
+        $("#txtEmail").val();
+        $("#txtFax").val();
+        $("#txtAge").val(0);
+        $("#txtPhone").val(0);
+    }
+
+
+</script>
+
+
